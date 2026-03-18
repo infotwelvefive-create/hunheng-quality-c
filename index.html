@@ -1,0 +1,934 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="QC ฮันเฮง">
+<title>QC ฮันเฮง</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --A:#3B6D11;--A-bg:#EAF3DE;--A-mid:#C0DD97;
+  --B:#BA7517;--B-bg:#FAEEDA;--B-mid:#FAC775;
+  --BB:#185FA5;--BB-bg:#E6F1FB;--BB-mid:#B5D4F4;
+  --C:#A32D2D;--C-bg:#FCEBEB;--C-mid:#F7C1C1;
+  --bg:#F8F9FA;--bg2:#fff;--bdr:#E0E0E0;
+  --txt:#1a1a1a;--txt2:#666;--fn:'Sarabun',sans-serif;
+}
+body{background:var(--bg);font-family:var(--fn);color:var(--txt);min-height:100vh}
+
+/* ── LOGIN ── */
+#login-screen{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;background:var(--bg)}
+.login-logo{font-size:48px;margin-bottom:8px}
+.login-title{font-size:22px;font-weight:700;margin-bottom:4px}
+.login-sub{font-size:14px;color:var(--txt2);margin-bottom:32px}
+.role-cards{display:flex;flex-direction:column;gap:12px;width:100%;max-width:360px;margin-bottom:28px}
+.role-card{padding:16px 20px;border-radius:14px;border:2px solid var(--bdr);background:#fff;cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:14px}
+.role-card:hover{border-color:#999}
+.role-card.sel{border-color:#1a1a1a;background:#f0f0f0}
+.role-icon{font-size:28px;flex-shrink:0}
+.role-info .role-name{font-size:15px;font-weight:600}
+.role-info .role-desc{font-size:12px;color:var(--txt2);margin-top:2px}
+.pin-section{width:100%;max-width:360px}
+.pin-label{font-size:13px;color:var(--txt2);margin-bottom:8px;text-align:center}
+.pin-display{display:flex;justify-content:center;gap:10px;margin-bottom:16px}
+.pin-dot{width:18px;height:18px;border-radius:50%;border:2px solid #ccc;background:#fff;transition:all .15s}
+.pin-dot.filled{background:#1a1a1a;border-color:#1a1a1a}
+.pin-pad{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.pin-btn{padding:16px;border-radius:12px;border:1px solid var(--bdr);background:#fff;font-size:22px;font-weight:600;cursor:pointer;font-family:var(--fn);transition:all .15s;color:var(--txt)}
+.pin-btn:active{background:#e0e0e0}
+.pin-btn.del{font-size:16px;color:var(--txt2)}
+.login-err{color:#A32D2D;font-size:13px;text-align:center;margin-top:10px;min-height:20px}
+
+/* ── TAILOR LOGIN ── */
+.tailor-select{width:100%;padding:12px;font-size:16px;font-family:var(--fn);border:1.5px solid var(--bdr);border-radius:10px;background:#fff;color:var(--txt);margin-bottom:12px}
+.login-btn{width:100%;padding:14px;border-radius:12px;border:none;background:#1a1a1a;color:#fff;font-size:16px;font-weight:600;cursor:pointer;font-family:var(--fn);transition:opacity .15s}
+.login-btn:disabled{opacity:.4;cursor:default}
+
+/* ── APP HEADER ── */
+.app-bar{background:#fff;border-bottom:1px solid var(--bdr);padding:10px 16px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:30;box-shadow:0 1px 4px rgba(0,0,0,.06)}
+.app-bar-title{font-size:14px;font-weight:600}
+.app-bar-role{font-size:11px;padding:3px 10px;border-radius:20px;font-weight:600}
+.role-qc{background:#EAF3DE;color:#3B6D11}
+.role-mgr{background:#E6F1FB;color:#185FA5}
+.role-tailor{background:#FAEEDA;color:#BA7517}
+.logout-btn{font-size:12px;color:var(--txt2);background:none;border:none;cursor:pointer;padding:4px 8px;border-radius:6px;font-family:var(--fn)}
+
+/* ── APP ── */
+.app{max-width:480px;margin:0 auto;padding-bottom:80px;display:none}
+.nav{display:flex;background:#fff;border-bottom:1px solid var(--bdr);position:sticky;top:53px;z-index:20}
+.nav-btn{flex:1;padding:12px 2px;font-size:12px;font-weight:600;color:var(--txt2);background:none;border:none;border-bottom:2.5px solid transparent;cursor:pointer;transition:all .15s;font-family:var(--fn)}
+.nav-btn.on{color:var(--txt);border-bottom-color:var(--txt)}
+.sec{padding:14px}
+.card{background:#fff;border:1px solid var(--bdr);border-radius:12px;padding:14px;margin-bottom:10px;box-shadow:0 1px 3px rgba(0,0,0,.04)}
+.card-title{font-size:11px;font-weight:600;color:var(--txt2);text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px}
+.field{margin-bottom:12px}.field:last-child{margin-bottom:0}
+.field label{display:block;font-size:13px;color:var(--txt2);margin-bottom:5px;font-weight:500}
+.field input,.field select,.field textarea{width:100%;padding:10px 12px;font-size:15px;font-family:var(--fn);border:1px solid var(--bdr);border-radius:8px;background:#fafafa;color:var(--txt);outline:none;transition:border-color .15s}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:#999;background:#fff}
+.field textarea{resize:none;height:70px}
+.grade-row{display:flex;gap:8px}
+.gbtn{flex:1;padding:12px 4px 10px;border-radius:10px;border:1.5px solid var(--bdr);font-size:15px;font-weight:600;cursor:pointer;background:#fafafa;color:var(--txt2);line-height:1.3;transition:all .15s;font-family:var(--fn);text-align:center}
+.gbtn.on-A{background:var(--A-bg);color:var(--A);border-color:var(--A-mid)}
+.gbtn.on-B{background:var(--B-bg);color:var(--B);border-color:var(--B-mid)}
+.gbtn.on-BB{background:var(--BB-bg);color:var(--BB);border-color:var(--BB-mid)}
+.gbtn.on-C{background:var(--C-bg);color:var(--C);border-color:var(--C-mid)}
+.qty-row{display:flex;align-items:center;gap:8px}
+.qbtn{width:40px;height:40px;border-radius:10px;border:1px solid var(--bdr);background:#fafafa;font-size:22px;cursor:pointer;color:var(--txt);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-family:var(--fn)}
+.qty-num{flex:1;text-align:center;font-size:28px;font-weight:600}
+.qty-inp{width:64px;text-align:center;font-size:15px;padding:8px;border:1px solid var(--bdr);border-radius:8px;background:#fafafa;color:var(--txt);font-family:var(--fn)}
+.quick-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px}
+.quick-btn{padding:13px 8px;border-radius:12px;border:2px solid;font-size:13px;font-weight:600;cursor:pointer;font-family:var(--fn);transition:all .15s;text-align:center;line-height:1.3}
+.quick-btn.pass{border-color:var(--A-mid);background:var(--A-bg);color:var(--A)}
+.quick-btn.pass.active{background:var(--A);color:#fff;border-color:var(--A)}
+.quick-btn.bb2{border-color:var(--BB-mid);background:var(--BB-bg);color:var(--BB)}
+.quick-btn.bb2.active{background:var(--BB);color:#fff;border-color:var(--BB)}
+.defect-section{margin-bottom:14px}
+.defect-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.defect-cat{display:flex;align-items:center;gap:6px;font-size:13px;font-weight:600}
+.sel-all-btn{font-size:12px;color:var(--txt2);background:none;border:none;cursor:pointer;padding:2px 6px;border-radius:6px;font-family:var(--fn)}
+.defect-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px}
+.dc{position:relative;border:1px solid var(--bdr);border-radius:10px;padding:10px 10px 8px;cursor:pointer;transition:all .15s;background:#fafafa;user-select:none}
+.dc.checked{background:var(--C-bg);border-color:var(--C-mid)}
+.dc.checked .dc-label{color:var(--C)}
+.dc.disabled{opacity:.4;pointer-events:none}
+.dc input[type=checkbox]{position:absolute;top:8px;right:8px;width:15px;height:15px;accent-color:var(--C)}
+.dc-label{font-size:12px;font-weight:600;display:block;margin-bottom:2px;padding-right:20px;line-height:1.3}
+.dc-cnt{font-size:11px;color:var(--txt2)}
+.gs-box{border-radius:10px;padding:12px 14px;font-size:14px;display:flex;align-items:center;gap:10px;margin-bottom:10px;transition:all .3s}
+.gs-icon{font-size:20px}
+.gs-main{font-weight:600}
+.gs-sub{font-size:12px;opacity:.8;margin-top:1px}
+.gs-A{background:var(--A-bg);color:var(--A)}.gs-B{background:var(--B-bg);color:var(--B)}
+.gs-BB{background:var(--BB-bg);color:var(--BB)}.gs-C{background:var(--C-bg);color:var(--C)}
+.gs-none{background:#f0f0f0;color:var(--txt2)}
+.photo-zone{border:1.5px dashed #ccc;border-radius:10px;padding:14px;text-align:center;cursor:pointer;background:#fafafa}
+.pz-icon{font-size:28px;margin-bottom:6px}
+.pz-text{font-size:13px;color:var(--txt2)}
+.photo-grid{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.photo-thumb{position:relative;width:72px;height:72px}
+.photo-thumb img{width:72px;height:72px;object-fit:cover;border-radius:8px;border:1px solid var(--bdr)}
+.photo-del{position:absolute;top:-6px;right:-6px;width:20px;height:20px;border-radius:50%;background:var(--C-bg);color:var(--C);border:none;cursor:pointer;font-size:11px;display:flex;align-items:center;justify-content:center}
+.sub-btn{width:100%;padding:15px;border-radius:12px;border:none;background:#1a1a1a;color:#fff;font-size:16px;font-weight:600;cursor:pointer;font-family:var(--fn);margin-top:4px;transition:opacity .15s}
+.sub-btn:disabled{opacity:.35;cursor:default}
+.sub-btn:active:not(:disabled){opacity:.8}
+/* STATS */
+.stat-row{display:grid;grid-template-columns:1fr 1fr 1fr 1fr 1fr;gap:5px;margin-bottom:12px}
+.stat-box{padding:8px 4px;border-radius:10px;text-align:center}
+.stat-box .sl{font-size:10px;margin-bottom:2px;font-weight:500}
+.stat-box .sv{font-size:18px;font-weight:700}
+.s-tot{background:#f0f0f0;color:var(--txt)}.s-tot .sl{color:var(--txt2)}
+.s-A{background:var(--A-bg);color:var(--A)}.s-B{background:var(--B-bg);color:var(--B)}
+.s-BB{background:var(--BB-bg);color:var(--BB)}.s-C{background:var(--C-bg);color:var(--C)}
+/* DASHBOARD */
+.dash-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+.dash-card{background:#fff;border:1px solid var(--bdr);border-radius:12px;padding:14px;text-align:center}
+.dash-card .dc-val{font-size:32px;font-weight:700;margin-bottom:2px}
+.dash-card .dc-lbl{font-size:12px;color:var(--txt2)}
+.dash-card .dc-pct{font-size:12px;margin-top:2px;font-weight:500}
+.bar-wrap{background:#f0f0f0;border-radius:6px;height:8px;margin-top:6px;overflow:hidden}
+.bar-fill{height:100%;border-radius:6px;transition:width .5s}
+.period-row{display:flex;gap:6px;margin-bottom:12px}
+.period-btn{flex:1;padding:9px;border-radius:8px;border:1px solid var(--bdr);background:#fafafa;font-size:13px;font-weight:600;cursor:pointer;font-family:var(--fn);color:var(--txt2);transition:all .15s}
+.period-btn.on{background:#1a1a1a;color:#fff;border-color:#1a1a1a}
+.tailor-row{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid var(--bdr);font-size:14px}
+.tailor-row:last-child{border-bottom:none}
+.tg{padding:2px 7px;border-radius:6px;font-size:11px;font-weight:600}
+.tg-A{background:var(--A-bg);color:var(--A)}.tg-B{background:var(--B-bg);color:var(--B)}
+.tg-BB{background:var(--BB-bg);color:var(--BB)}.tg-C{background:var(--C-bg);color:var(--C)}
+/* LOG */
+.log-item{padding:12px 14px;border-bottom:1px solid var(--bdr);display:flex;align-items:flex-start;gap:10px}
+.log-item:last-child{border-bottom:none}
+.gbadge{width:36px;height:36px;border-radius:8px;font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.gb-A{background:var(--A-bg);color:var(--A)}.gb-B{background:var(--B-bg);color:var(--B)}
+.gb-BB{background:var(--BB-bg);color:var(--BB)}.gb-C{background:var(--C-bg);color:var(--C)}
+.log-body{flex:1;min-width:0}
+.log-main{font-size:14px;font-weight:600}
+.log-sub{font-size:12px;color:var(--txt2);margin-top:2px;line-height:1.4}
+.defect-tags{display:flex;flex-wrap:wrap;gap:4px;margin-top:5px}
+.dtag{font-size:11px;padding:2px 7px;border-radius:6px;background:var(--C-bg);color:var(--C);font-weight:500}
+.log-photos{display:flex;gap:4px;margin-top:6px;flex-wrap:wrap}
+.log-photos img{width:48px;height:48px;object-fit:cover;border-radius:6px;border:1px solid var(--bdr);cursor:pointer}
+.log-right{display:flex;flex-direction:column;align-items:flex-end;gap:6px;flex-shrink:0}
+.log-qty{font-size:14px;font-weight:600}
+.del-btn{background:none;border:none;cursor:pointer;color:var(--txt2);font-size:14px;padding:2px 4px;border-radius:6px}
+/* REPORT */
+.exp-box{background:#f5f5f5;border-radius:8px;padding:10px;font-size:11px;font-family:monospace;white-space:pre-wrap;color:#555;max-height:200px;overflow-y:auto;margin-top:8px;line-height:1.5}
+.copy-btn{width:100%;padding:11px;border-radius:8px;border:1px solid var(--bdr);background:#fafafa;font-size:14px;font-family:var(--fn);color:var(--txt);cursor:pointer;margin-top:8px;font-weight:500}
+/* TAILOR VIEW */
+.my-grade-hero{text-align:center;padding:24px 16px;border-radius:14px;margin-bottom:12px}
+.mgh-name{font-size:13px;margin-bottom:8px;font-weight:500}
+.mgh-grade{font-size:64px;font-weight:700;line-height:1}
+.mgh-label{font-size:14px;margin-top:6px;font-weight:500}
+.mgh-A{background:var(--A-bg);color:var(--A)}
+.mgh-B{background:var(--B-bg);color:var(--B)}
+.mgh-BB{background:var(--BB-bg);color:var(--BB)}
+.mgh-C{background:var(--C-bg);color:var(--C)}
+.mgh-none{background:#f0f0f0;color:var(--txt2)}
+/* DEFECT RANK */
+.drank-item{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--bdr)}
+.drank-item:last-child{border-bottom:none}
+.drank-num{width:22px;height:22px;border-radius:50%;background:#f0f0f0;font-size:11px;font-weight:600;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.drank-bar-wrap{flex:1}
+.drank-label{font-size:13px;font-weight:500;margin-bottom:3px}
+.drank-bar{height:6px;background:var(--C-mid);border-radius:3px}
+.drank-cnt{font-size:13px;font-weight:600;color:var(--C);flex-shrink:0}
+/* TOAST / LB */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(60px);background:#1a1a1a;color:#fff;padding:10px 20px;border-radius:20px;font-size:13px;opacity:0;transition:all .3s;pointer-events:none;white-space:nowrap;z-index:999}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.lightbox{position:fixed;inset:0;background:rgba(0,0,0,.85);display:none;align-items:center;justify-content:center;z-index:999}
+.lightbox img{max-width:90vw;max-height:85vh;border-radius:8px}
+.lb-close{position:absolute;top:16px;right:16px;background:rgba(255,255,255,.15);border:none;color:#fff;width:36px;height:36px;border-radius:50%;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.empty{text-align:center;padding:40px 20px;color:var(--txt2);font-size:14px}
+.badge-info{background:#E6F1FB;border-radius:10px;padding:12px 14px;font-size:13px;color:#185FA5;margin-bottom:10px;line-height:1.5}
+</style>
+</head>
+<body>
+
+<!-- ══ LOGIN SCREEN ══ -->
+<div id="login-screen">
+  <div class="login-logo">🧵</div>
+  <div class="login-title">QC ฮันเฮง</div>
+  <div class="login-sub">เลือกบทบาทของคุณ</div>
+
+  <div class="role-cards">
+    <div class="role-card" id="rc-qc" onclick="selectRole('qc')">
+      <div class="role-icon">🔍</div>
+      <div class="role-info">
+        <div class="role-name">พนักงาน QC</div>
+        <div class="role-desc">บันทึกและตรวจสอบคุณภาพ</div>
+      </div>
+    </div>
+    <div class="role-card" id="rc-mgr" onclick="selectRole('mgr')">
+      <div class="role-icon">👔</div>
+      <div class="role-info">
+        <div class="role-name">ผู้จัดการ / ผู้บริหาร</div>
+        <div class="role-desc">ดู Dashboard และรายงานเต็ม</div>
+      </div>
+    </div>
+    <div class="role-card" id="rc-tailor" onclick="selectRole('tailor')">
+      <div class="role-icon">🧵</div>
+      <div class="role-info">
+        <div class="role-name">ช่าง</div>
+        <div class="role-desc">ดูผลงานของตัวเอง</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PIN PAD (qc / mgr) -->
+  <div class="pin-section" id="pin-section" style="display:none">
+    <div class="pin-label" id="pin-label">กรอก PIN</div>
+    <div class="pin-display">
+      <div class="pin-dot" id="pd0"></div>
+      <div class="pin-dot" id="pd1"></div>
+      <div class="pin-dot" id="pd2"></div>
+      <div class="pin-dot" id="pd3"></div>
+    </div>
+    <div class="pin-pad">
+      <button class="pin-btn" onclick="pinPress('1')">1</button>
+      <button class="pin-btn" onclick="pinPress('2')">2</button>
+      <button class="pin-btn" onclick="pinPress('3')">3</button>
+      <button class="pin-btn" onclick="pinPress('4')">4</button>
+      <button class="pin-btn" onclick="pinPress('5')">5</button>
+      <button class="pin-btn" onclick="pinPress('6')">6</button>
+      <button class="pin-btn" onclick="pinPress('7')">7</button>
+      <button class="pin-btn" onclick="pinPress('8')">8</button>
+      <button class="pin-btn" onclick="pinPress('9')">9</button>
+      <button class="pin-btn" onclick="pinPress('')"></button>
+      <button class="pin-btn" onclick="pinPress('0')">0</button>
+      <button class="pin-btn del" onclick="pinDel()">⌫</button>
+    </div>
+    <div class="login-err" id="pin-err"></div>
+  </div>
+
+  <!-- TAILOR SELECT -->
+  <div class="pin-section" id="tailor-section" style="display:none">
+    <div class="pin-label">เลือกชื่อของคุณ</div>
+    <select class="tailor-select" id="tailor-sel">
+      <option value="">— เลือกชื่อช่าง —</option>
+    </select>
+    <button class="login-btn" id="tailor-login-btn" onclick="tailorLogin()" disabled>เข้าสู่ระบบ</button>
+    <div class="login-err" id="tailor-err"></div>
+  </div>
+</div>
+
+<!-- ══ APP BAR ══ -->
+<div id="app-bar" style="display:none" class="app-bar">
+  <div class="app-bar-title" id="bar-title">QC ฮันเฮง</div>
+  <div style="display:flex;align-items:center;gap:8px">
+    <span class="app-bar-role" id="bar-role"></span>
+    <button class="logout-btn" onclick="logout()">ออก</button>
+  </div>
+</div>
+
+<!-- ══ QC APP ══ -->
+<div class="app" id="app-qc">
+  <div class="nav">
+    <button class="nav-btn on" onclick="tabQC('form')">+ บันทึก</button>
+    <button class="nav-btn" onclick="tabQC('log')">รายการ</button>
+    <button class="nav-btn" onclick="tabQC('sum')">สรุป</button>
+    <button class="nav-btn" onclick="tabQC('report')">รายงาน</button>
+  </div>
+  <!-- FORM -->
+  <div id="qc-form">
+    <div class="sec">
+      <div class="card">
+        <div class="field"><label>ช่างผู้ผลิต *</label><input id="f-tailor" type="text" placeholder="ชื่อช่าง" list="tailor-list" oninput="chk()"><datalist id="tailor-list"></datalist></div>
+        <div class="field"><label>รหัส / ชื่อสินค้า *</label><input id="f-prod" type="text" placeholder="เช่น เสื้อเชิ้ต-WH001" oninput="chk()"></div>
+        <div class="field"><label>ล็อต / รุ่นผลิต</label><input id="f-lot" type="text" placeholder="เช่น LOT2503-A"></div>
+      </div>
+      <div class="card">
+        <div class="card-title">จำนวนชิ้น</div>
+        <div class="qty-row">
+          <button class="qbtn" onclick="dq(-1)">−</button>
+          <div class="qty-num" id="qnum">1</div>
+          <button class="qbtn" onclick="dq(1)">+</button>
+          <input class="qty-inp" id="f-qty" type="number" value="1" min="1" oninput="sqty(this.value)">
+          <span style="font-size:13px;color:var(--txt2)">ชิ้น</span>
+        </div>
+      </div>
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+          <div style="font-size:15px;font-weight:600">จุดบกพร่องที่พบ</div>
+          <button class="sel-all-btn" onclick="clearAll()">ล้างทั้งหมด</button>
+        </div>
+        <div class="quick-row">
+          <button class="quick-btn pass" id="btn-pass" onclick="toggleQuick('pass')">✓ ไม่พบข้อบกพร่อง<br><span style="font-size:11px;font-weight:400">→ เกรด A</span></button>
+          <button class="quick-btn bb2" id="btn-bb2" onclick="toggleQuick('bb2')">🔄 แก้ไขรอบที่ 2<br><span style="font-size:11px;font-weight:400">→ เกรด BB</span></button>
+        </div>
+        <div id="defect-form"></div>
+        <div class="field" style="margin-top:4px"><label>หมายเหตุ</label><textarea id="f-note" placeholder="ระบุตำแหน่ง เช่น ตะเข็บบ่าขวา 2 ตัว..."></textarea></div>
+      </div>
+      <div class="gs-box gs-none" id="gs-box">
+        <div class="gs-icon">?</div>
+        <div><div class="gs-main">กดปุ่มหรือเลือกจุดบกพร่อง</div><div class="gs-sub">ระบบจะแนะนำเกรดอัตโนมัติ</div></div>
+      </div>
+      <div class="card">
+        <div class="card-title">เกรดสุดท้าย * <span style="font-weight:400;text-transform:none">(ปรับได้)</span></div>
+        <div class="grade-row" id="grade-row-main">
+          <button class="gbtn" id="gb-A" onclick="selGrade('A')">A<br><span style="font-size:11px;font-weight:400">ผ่าน</span></button>
+          <button class="gbtn" id="gb-B" onclick="selGrade('B')">B<br><span style="font-size:11px;font-weight:400">แก้ไขได้</span></button>
+          <button class="gbtn" id="gb-C" onclick="selGrade('C')">C<br><span style="font-size:11px;font-weight:400">ตีคืน</span></button>
+        </div>
+        <div id="bb-badge" style="display:none;margin-top:10px;padding:10px 12px;background:var(--BB-bg);border-radius:8px;color:var(--BB);font-size:13px;font-weight:600;text-align:center">🔄 เกรด BB — แก้ไขรอบที่ 2</div>
+      </div>
+      <div class="card">
+        <div class="card-title">ภาพถ่ายประกอบ</div>
+        <div class="photo-zone" onclick="document.getElementById('photo-inp').click()">
+          <div class="pz-icon">📷</div><div class="pz-text">แตะเพื่อถ่ายรูปหรือเลือกจากแกลเลอรี่</div>
+        </div>
+        <input type="file" id="photo-inp" accept="image/*" multiple capture="environment" style="display:none" onchange="addPhotos(this)">
+        <div class="photo-grid" id="photo-grid"></div>
+      </div>
+      <button class="sub-btn" id="sub-btn" onclick="submitQC()" disabled>บันทึก QC</button>
+    </div>
+  </div>
+  <!-- LOG -->
+  <div id="qc-log" style="display:none">
+    <div class="sec"><div id="log-stats"></div></div>
+    <div class="card" style="margin:0 14px;padding:0;overflow:hidden"><div id="log-list"></div></div>
+  </div>
+  <!-- SUM -->
+  <div id="qc-sum" style="display:none">
+    <div class="sec">
+      <div class="period-row">
+        <button class="period-btn on" id="pb-today" onclick="setPeriod('today')">วันนี้</button>
+        <button class="period-btn" id="pb-week" onclick="setPeriod('week')">สัปดาห์</button>
+        <button class="period-btn" id="pb-month" onclick="setPeriod('month')">เดือน</button>
+      </div>
+      <div id="sum-content"></div>
+    </div>
+  </div>
+  <!-- REPORT -->
+  <div id="qc-report" style="display:none">
+    <div class="sec">
+      <div class="period-row">
+        <button class="period-btn on" id="rb-today" onclick="setRPeriod('today')">วันนี้</button>
+        <button class="period-btn" id="rb-week" onclick="setRPeriod('week')">สัปดาห์</button>
+        <button class="period-btn" id="rb-month" onclick="setRPeriod('month')">เดือน</button>
+      </div>
+      <div class="card"><div class="card-title">รายงานส่ง Honey</div><div class="exp-box" id="exp-box"></div><button class="copy-btn" onclick="copyExp()">คัดลอกรายงาน</button></div>
+      <div class="card" style="margin-top:4px"><div class="card-title" style="margin-bottom:8px">ช่างเกรด C สูงสุด</div><div id="c-rank"></div></div>
+      <div class="card" style="margin-top:4px"><div class="card-title" style="margin-bottom:8px">จุดบกพร่องที่พบบ่อย</div><div id="defect-rank-qc"></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MANAGER APP ══ -->
+<div class="app" id="app-mgr">
+  <div class="nav">
+    <button class="nav-btn on" onclick="tabMgr('dash')">Dashboard</button>
+    <button class="nav-btn" onclick="tabMgr('tailor')">รายช่าง</button>
+    <button class="nav-btn" onclick="tabMgr('defect')">บกพร่อง</button>
+    <button class="nav-btn" onclick="tabMgr('report')">รายงาน</button>
+  </div>
+  <div id="mgr-dash">
+    <div class="sec">
+      <div class="period-row">
+        <button class="period-btn on" id="mp-today" onclick="setMgrPeriod('today')">วันนี้</button>
+        <button class="period-btn" id="mp-week" onclick="setMgrPeriod('week')">สัปดาห์</button>
+        <button class="period-btn" id="mp-month" onclick="setMgrPeriod('month')">เดือน</button>
+      </div>
+      <div id="mgr-dash-content"></div>
+    </div>
+  </div>
+  <div id="mgr-tailor" style="display:none">
+    <div class="sec"><div id="mgr-tailor-content"></div></div>
+  </div>
+  <div id="mgr-defect" style="display:none">
+    <div class="sec"><div id="mgr-defect-content"></div></div>
+  </div>
+  <div id="mgr-report" style="display:none">
+    <div class="sec">
+      <div class="period-row">
+        <button class="period-btn on" id="mr-today" onclick="setMgrRPeriod('today')">วันนี้</button>
+        <button class="period-btn" id="mr-week" onclick="setMgrRPeriod('week')">สัปดาห์</button>
+        <button class="period-btn" id="mr-month" onclick="setMgrRPeriod('month')">เดือน</button>
+      </div>
+      <div class="card"><div class="card-title">รายงานสรุปผู้บริหาร</div><div class="exp-box" id="mgr-exp-box"></div><button class="copy-btn" onclick="copyMgrExp()">คัดลอกรายงาน</button></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ TAILOR APP ══ -->
+<div class="app" id="app-tailor">
+  <div class="nav">
+    <button class="nav-btn on" onclick="tabTailor('today')">วันนี้</button>
+    <button class="nav-btn" onclick="tabTailor('week')">สัปดาห์</button>
+    <button class="nav-btn" onclick="tabTailor('history')">ประวัติ</button>
+  </div>
+  <div id="tailor-content">
+    <div class="sec"><div id="tailor-view"></div></div>
+  </div>
+</div>
+
+<div class="lightbox" id="lb" onclick="closeLB()"><button class="lb-close" onclick="closeLB()">✕</button><img id="lb-img" src="" alt=""></div>
+<div class="toast" id="toast"></div>
+
+<script>
+// ══ CONFIG ══
+const PINS = { qc: '0123', mgr: '0125' }; // ← เปลี่ยน PIN ได้ที่นี่
+const TAILOR_NAMES = ['รส','วรรณ','แอนนา','วิกกี้','ริน','พลอย']; // ← เพิ่มชื่อช่างที่นี่
+
+const DEFECT_CATS=[
+  {id:'stitch',label:'การตัดเย็บ',ico:'🧵',items:[
+    {id:'s1',label:'ตะเข็บหลุด/โล้'},{id:'s2',label:'ด้ายขาดกลางตัด'},
+    {id:'s3',label:'เส้นด้ายเกิน'},{id:'s4',label:'ผ้าย่นหน้าตะเข็บ'},
+    {id:'s5',label:'กระดุมหลุด/ผิดที่'},{id:'s6',label:'ซิปชำรุด/ติด'},
+  ]},
+  {id:'fabric',label:'ผ้าและสี',ico:'🎨',items:[
+    {id:'f1',label:'คราบ/เปื้อน'},{id:'f2',label:'รู/ขาด'},
+    {id:'f3',label:'สีไม่สม่ำเสมอ'},{id:'f4',label:'สีซีด/ตก'},
+    {id:'f5',label:'ผ้าเป็นขุย'},{id:'f6',label:'กลิ่นผิดปกติ'},
+  ]},
+  {id:'size',label:'ขนาดและรูปทรง',ico:'📐',items:[
+    {id:'z1',label:'ขนาดผิดแบบ'},{id:'z2',label:'ซ้าย-ขวาไม่เท่า'},
+    {id:'z3',label:'ผ้าหด'},{id:'z4',label:'พิมพ์ผิดที่'},
+  ]},
+  {id:'label',label:'ป้ายและอุปกรณ์',ico:'🏷️',items:[
+    {id:'l1',label:'ป้ายหาย/ผิด'},{id:'l2',label:'ป้ายไซส์ผิด'},
+    {id:'l3',label:'กบ/เชือกชำรุด'},{id:'l4',label:'ชายผ้าไม่เสมอ'},
+  ]}
+];
+const DW={s1:2,s2:2,s6:2,f2:2,z1:2,z2:2,s3:1,s4:1,s5:1,f1:1,f3:1,f4:1,f5:1,f6:1,z3:1,z4:1,l1:1,l2:1,l3:1,l4:1};
+const MG=['A','B','C'];
+
+const SHEET_URL = 'https://script.google.com/macros/s/AKfycbwMrt5iH4f9Id3QXJ1i2FzIpHCM4WZptSeAHZLeKCppREdFWPZpVu7mbuoJQUOWmaQnCg/exec';
+
+let records=[];
+try{records=JSON.parse(localStorage.getItem('hunheng_qc3')||'[]');}catch(e){}
+let curRole='',curTailor='',pinStr='',qcPeriod='today',rPeriod='today',mgrPeriod='today',mgrRPeriod='today',tailorPeriod='today';
+let grade='',qty=1,photos=[],checkedDefects={},quickMode='';
+let isSyncing=false;
+
+function save(){
+  try{localStorage.setItem('hunheng_qc3',JSON.stringify(records));}catch(e){}
+}
+
+async function loadFromSheet(){
+  try{
+    showSyncStatus('กำลังโหลดข้อมูล...');
+    const res = await fetch(SHEET_URL+'?t='+Date.now(), {
+      method:'GET',
+      redirect:'follow'
+    });
+    const text = await res.text();
+    let data;
+    try{ data = JSON.parse(text); }catch(e){ hideSyncStatus(); return; }
+    if(Array.isArray(data) && data.length > 0){
+      const sheetRecs = data.map(r=>{
+        if(!r.id) r.id = (r.date||'')+'_'+(r.time||'')+'_'+(r.tailor||'');
+        if(!r.defectLabels) r.defectLabels=[];
+        if(!r.photos) r.photos=[];
+        if(!r.defects) r.defects={};
+        r.qty = parseInt(r.qty)||1;
+        return r;
+      });
+      records = sheetRecs;
+      save();
+    }
+    hideSyncStatus();
+  }catch(e){
+    hideSyncStatus();
+    console.log('load error',e);
+  }
+}
+
+async function sendToSheet(rec){
+  try{
+    const payload = {
+      date: rec.date, time: rec.time,
+      tailor: rec.tailor, prod: rec.prod,
+      lot: rec.lot||'', qty: rec.qty,
+      grade: rec.grade,
+      defectLabels: rec.defectLabels||[],
+      note: rec.note||''
+    };
+    // ส่งผ่าน no-cors (หลีกเลี่ยง CORS error จาก GitHub Pages)
+    const form = new FormData();
+    form.append('data', JSON.stringify(payload));
+    await fetch(SHEET_URL, {
+      method:'POST',
+      mode:'no-cors',
+      body: JSON.stringify(payload)
+    });
+    return true;
+  }catch(e){
+    console.log('send error',e);
+    return false;
+  }
+}
+
+function showSyncStatus(msg){
+  let el=document.getElementById('sync-bar');
+  if(!el){el=document.createElement('div');el.id='sync-bar';el.style.cssText='position:fixed;top:0;left:0;right:0;background:#185FA5;color:#fff;text-align:center;font-size:12px;padding:6px;z-index:999;font-family:var(--fn)';document.body.appendChild(el);}
+  el.textContent=msg;el.style.display='block';
+}
+function hideSyncStatus(){
+  const el=document.getElementById('sync-bar');
+  if(el)el.style.display='none';
+}
+
+// ══ LOGIN ══
+function selectRole(r){
+  document.querySelectorAll('.role-card').forEach(c=>c.classList.remove('sel'));
+  document.getElementById('rc-'+r).classList.add('sel');
+  curRole=r; pinStr='';
+  document.getElementById('pin-section').style.display=r==='tailor'?'none':'block';
+  document.getElementById('tailor-section').style.display=r==='tailor'?'block':'none';
+  document.getElementById('pin-err').textContent='';
+  document.getElementById('tailor-err').textContent='';
+  updatePinDots();
+  if(r==='tailor'){
+    const sel=document.getElementById('tailor-sel');
+    sel.innerHTML='<option value="">— เลือกชื่อช่าง —</option>';
+    // รวมชื่อจาก config + ชื่อที่เคยบันทึก
+    const fromRecs=[...new Set(records.map(r=>r.tailor))];
+    const all=[...new Set([...TAILOR_NAMES,...fromRecs])].filter(Boolean).sort();
+    all.forEach(n=>{const o=document.createElement('option');o.value=n;o.textContent=n;sel.appendChild(o);});
+    sel.onchange=()=>{document.getElementById('tailor-login-btn').disabled=!sel.value;};
+  } else {
+    document.getElementById('pin-label').textContent=r==='qc'?'PIN สำหรับ QC':'PIN สำหรับผู้จัดการ';
+  }
+}
+function pinPress(n){
+  if(!n||pinStr.length>=4)return;
+  pinStr+=n; updatePinDots();
+  if(pinStr.length===4) setTimeout(checkPin,200);
+}
+function pinDel(){pinStr=pinStr.slice(0,-1);updatePinDots();document.getElementById('pin-err').textContent='';}
+function updatePinDots(){
+  for(let i=0;i<4;i++) document.getElementById('pd'+i).classList.toggle('filled',i<pinStr.length);
+}
+function checkPin(){
+  if(pinStr===PINS[curRole]){enterApp(curRole);}
+  else{document.getElementById('pin-err').textContent='PIN ไม่ถูกต้อง ลองใหม่';pinStr='';updatePinDots();}
+}
+function tailorLogin(){
+  const name=document.getElementById('tailor-sel').value;
+  if(!name)return;
+  curTailor=name; enterApp('tailor');
+}
+function enterApp(role){
+  document.getElementById('login-screen').style.display='none';
+  document.getElementById('app-bar').style.display='flex';
+  const roleLabel={qc:'🔍 QC',mgr:'👔 ผู้จัดการ',tailor:'🧵 ช่าง'}[role];
+  const roleClass={qc:'role-qc',mgr:'role-mgr',tailor:'role-tailor'}[role];
+  document.getElementById('bar-title').textContent=role==='tailor'?'งานของ '+curTailor:'QC ฮันเฮง';
+  document.getElementById('bar-role').textContent=roleLabel;
+  document.getElementById('bar-role').className='app-bar-role '+roleClass;
+  if(role==='qc'){
+    document.getElementById('app-qc').style.display='block';
+    buildDF();
+    loadFromSheet().then(()=>{records.forEach(r=>updateSugg(r.tailor));});
+  } else if(role==='mgr'){
+    document.getElementById('app-mgr').style.display='block';
+    loadFromSheet().then(()=>renderMgrDash());
+  } else {
+    document.getElementById('app-tailor').style.display='block';
+    loadFromSheet().then(()=>renderTailor('today'));
+  }
+}
+function logout(){
+  ['app-qc','app-mgr','app-tailor'].forEach(id=>document.getElementById(id).style.display='none');
+  document.getElementById('app-bar').style.display='none';
+  document.getElementById('login-screen').style.display='flex';
+  document.querySelectorAll('.role-card').forEach(c=>c.classList.remove('sel'));
+  document.getElementById('pin-section').style.display='none';
+  document.getElementById('tailor-section').style.display='none';
+  curRole='';curTailor='';pinStr='';updatePinDots();
+}
+
+// ══ QC FORM ══
+function tabQC(t){
+  ['form','log','sum','report'].forEach(id=>document.getElementById('qc-'+id).style.display=id===t?'':'none');
+  document.querySelectorAll('#app-qc .nav-btn').forEach((b,i)=>b.classList.toggle('on',['form','log','sum','report'][i]===t));
+  if(t==='log')renderLog();if(t==='sum')renderSum();if(t==='report')renderReport();
+}
+function toggleQuick(mode){
+  if(quickMode===mode){quickMode='';resetQUI();return;}
+  quickMode=mode;
+  document.getElementById('btn-pass').classList.remove('active');
+  document.getElementById('btn-bb2').classList.remove('active');
+  document.getElementById('btn-'+mode).classList.add('active');
+  DEFECT_CATS.forEach(cat=>cat.items.forEach(item=>{
+    checkedDefects[item.id]=0;
+    document.getElementById('dc-'+item.id).classList.remove('checked');
+    document.getElementById('chk-'+item.id).checked=false;
+    document.getElementById('dc-'+item.id).classList.add('disabled');
+  }));
+  if(mode==='pass'){setGS('A','ไม่พบข้อบกพร่อง → ผ่านเกรด A');showMG(true);grade='A';MG.forEach(g=>document.getElementById('gb-'+g).className='gbtn'+(g==='A'?' on-A':''));}
+  else{setGS('BB','แก้ไขรอบที่ 2 → แนะนำเกรด BB');showMG(false);grade='BB';}
+  chk();
+}
+function showMG(show){document.getElementById('bb-badge').style.display=show?'none':'block';document.getElementById('grade-row-main').style.display=show?'flex':'none';}
+function resetQUI(){
+  document.getElementById('btn-pass').classList.remove('active');
+  document.getElementById('btn-bb2').classList.remove('active');
+  DEFECT_CATS.forEach(cat=>cat.items.forEach(item=>document.getElementById('dc-'+item.id).classList.remove('disabled')));
+  setGS(null,'กดปุ่มหรือเลือกจุดบกพร่อง');showMG(true);grade='';MG.forEach(g=>document.getElementById('gb-'+g).className='gbtn');chk();
+}
+function buildDF(){
+  document.getElementById('defect-form').innerHTML=DEFECT_CATS.map(cat=>`
+    <div class="defect-section">
+      <div class="defect-header">
+        <div class="defect-cat"><span>${cat.ico}</span>${cat.label}</div>
+        <button class="sel-all-btn" onclick="selAllCat('${cat.id}')">เลือกทั้งหมด</button>
+      </div>
+      <div class="defect-grid">
+        ${cat.items.map(item=>`
+          <div class="dc" id="dc-${item.id}" onclick="toggleD('${item.id}')">
+            <input type="checkbox" id="chk-${item.id}" onclick="event.stopPropagation();toggleD('${item.id}')">
+            <span class="dc-label">${item.label}</span>
+            <span class="dc-cnt" id="cnt-${item.id}"></span>
+          </div>`).join('')}
+      </div>
+    </div>`).join('');
+  DEFECT_CATS.forEach(cat=>cat.items.forEach(item=>{
+    const f=records.filter(r=>r.defects&&r.defects[item.id]).length;
+    document.getElementById('cnt-'+item.id).textContent=f>0?'×'+f:'';
+  }));
+}
+function toggleD(id){
+  if(quickMode)return;
+  checkedDefects[id]=checkedDefects[id]?0:1;const on=!!checkedDefects[id];
+  document.getElementById('dc-'+id).classList.toggle('checked',on);document.getElementById('chk-'+id).checked=on;
+  autoGrade();chk();
+}
+function selAllCat(catId){
+  if(quickMode)return;const cat=DEFECT_CATS.find(c=>c.id===catId);if(!cat)return;
+  const allOn=cat.items.every(item=>checkedDefects[item.id]);
+  cat.items.forEach(item=>{checkedDefects[item.id]=allOn?0:1;document.getElementById('dc-'+item.id).classList.toggle('checked',!allOn);document.getElementById('chk-'+item.id).checked=!allOn;});
+  autoGrade();chk();
+}
+function clearAll(){
+  quickMode='';resetQUI();
+  DEFECT_CATS.forEach(cat=>cat.items.forEach(item=>{checkedDefects[item.id]=0;document.getElementById('dc-'+item.id).classList.remove('checked','disabled');document.getElementById('chk-'+item.id).checked=false;}));
+  setGS(null,'กดปุ่มหรือเลือกจุดบกพร่อง');grade='';MG.forEach(g=>document.getElementById('gb-'+g).className='gbtn');chk();
+}
+function setGS(g,reason){
+  const box=document.getElementById('gs-box');
+  if(!g){box.className='gs-box gs-none';box.innerHTML=`<div class="gs-icon">?</div><div><div class="gs-main">${reason}</div><div class="gs-sub">ระบบจะแนะนำเกรดอัตโนมัติ</div></div>`;}
+  else{const icons={A:'✅',B:'⚠️',BB:'🔄',C:'❌'};box.className=`gs-box gs-${g}`;box.innerHTML=`<div class="gs-icon">${icons[g]}</div><div><div class="gs-main">แนะนำ เกรด ${g}</div><div class="gs-sub">${reason}</div></div>`;}
+}
+function autoGrade(){
+  const sel=Object.keys(checkedDefects).filter(id=>checkedDefects[id]);if(!sel.length){setGS(null,'กดปุ่มหรือเลือกจุดบกพร่อง');return;}
+  const hasC=sel.some(id=>DW[id]===2),hasB=sel.some(id=>DW[id]===1);
+  if(hasC){setGS('C','มีข้อบกพร่องระดับตีคืน → เกรด C');selGrade('C');}
+  else if(hasB){setGS('B','มีข้อบกพร่องที่แก้ไขได้ → เกรด B');selGrade('B');}
+  else{setGS('A','ไม่พบข้อบกพร่องร้ายแรง → เกรด A');selGrade('A');}
+}
+function selGrade(g){grade=g;MG.forEach(x=>document.getElementById('gb-'+x).className='gbtn'+(x===g?' on-'+x:''));chk();}
+function dq(d){qty=Math.max(1,qty+d);sync();}
+function sqty(v){qty=Math.max(1,parseInt(v)||1);document.getElementById('qnum').textContent=qty;}
+function sync(){document.getElementById('qnum').textContent=qty;document.getElementById('f-qty').value=qty;}
+function chk(){document.getElementById('sub-btn').disabled=!(document.getElementById('f-tailor').value.trim()&&document.getElementById('f-prod').value.trim()&&grade);}
+function addPhotos(inp){Array.from(inp.files).forEach(file=>{const r=new FileReader();r.onload=e=>{photos.push(e.target.result);renderPG();};r.readAsDataURL(file);});inp.value='';}
+function renderPG(){document.getElementById('photo-grid').innerHTML=photos.map((src,i)=>`<div class="photo-thumb"><img src="${src}" onclick="openLB('${src}')"><button class="photo-del" onclick="rmP(${i})">✕</button></div>`).join('');}
+function rmP(i){photos.splice(i,1);renderPG();}
+function submitQC(){
+  const now=new Date();
+  const ds={};DEFECT_CATS.forEach(cat=>cat.items.forEach(item=>{if(checkedDefects[item.id])ds[item.id]=1;}));
+  const dl=DEFECT_CATS.flatMap(cat=>cat.items.filter(item=>ds[item.id]).map(item=>item.label));
+  const rec={id:Date.now(),date:fmtDate(now),time:now.toTimeString().slice(0,5),
+    tailor:document.getElementById('f-tailor').value.trim(),
+    prod:document.getElementById('f-prod').value.trim(),lot:document.getElementById('f-lot').value.trim(),
+    grade,qty,defects:ds,defectLabels:dl,quickMode,note:document.getElementById('f-note').value.trim(),photos:[...photos]};
+  records.push(rec);save();updateSugg(rec.tailor);
+  sendToSheet(rec).then(()=>showSyncStatus('บันทึกลง Google Sheet แล้ว ✓')).then(()=>setTimeout(hideSyncStatus,2000));
+  ['f-prod','f-lot','f-note'].forEach(id=>document.getElementById(id).value='');
+  photos=[];renderPG();qty=1;sync();quickMode='';grade='';showMG(true);MG.forEach(g=>document.getElementById('gb-'+g).className='gbtn');
+  clearAll();chk();toast('บันทึกแล้ว ✓  เกรด '+rec.grade+' — '+rec.tailor+' ('+rec.qty+'ชิ้น)');buildDF();
+}
+function updateSugg(name){
+  const dl=document.getElementById('tailor-list');
+  if(!Array.from(dl.options).map(o=>o.value).includes(name)){const o=document.createElement('option');o.value=name;dl.appendChild(o);}
+}
+
+// ══ UTILS ══
+function fmtDate(d){return d.toLocaleDateString('th-TH',{year:'numeric',month:'2-digit',day:'2-digit'});}
+function todayStr(){return fmtDate(new Date());}
+function weekStart(){const d=new Date();d.setHours(0,0,0,0);const day=d.getDay();d.setDate(d.getDate()+(day===0?-6:1-day));return d;}
+function monthStart(){const d=new Date();d.setHours(0,0,0,0);d.setDate(1);return d;}
+function filterRecs(p,tailorName){
+  let recs=records;
+  if(tailorName)recs=recs.filter(r=>r.tailor===tailorName);
+  const today=todayStr();
+  if(p==='today')return recs.filter(r=>r.date===today);
+  if(p==='week'){const ws=weekStart();return recs.filter(r=>{const parts=r.date.split('/');if(parts.length<3)return false;const d=new Date(parseInt(parts[2])-543,parseInt(parts[1])-1,parseInt(parts[0]));return d>=ws;});}
+  if(p==='month'){const ms=monthStart();return recs.filter(r=>{const parts=r.date.split('/');if(parts.length<3)return false;const d=new Date(parseInt(parts[2])-543,parseInt(parts[1])-1,parseInt(parts[0]));return d>=ms;});}
+  return recs;
+}
+function calcStats(recs){const s={A:0,B:0,BB:0,C:0,total:0};recs.forEach(r=>{s[r.grade]=(s[r.grade]||0)+r.qty;s.total+=r.qty;});return s;}
+function statsHTML(s){
+  const pct=g=>s.total?Math.round((s[g]||0)/s.total*100):0;
+  return `<div class="stat-row">
+    <div class="stat-box s-tot"><div class="sl">รวม</div><div class="sv">${s.total}</div></div>
+    <div class="stat-box s-A"><div class="sl">A</div><div class="sv">${s.A||0}<span style="font-size:10px"> ${pct('A')}%</span></div></div>
+    <div class="stat-box s-B"><div class="sl">B</div><div class="sv">${s.B||0}<span style="font-size:10px"> ${pct('B')}%</span></div></div>
+    <div class="stat-box s-BB"><div class="sl">BB</div><div class="sv">${s.BB||0}<span style="font-size:10px"> ${pct('BB')}%</span></div></div>
+    <div class="stat-box s-C"><div class="sl">C</div><div class="sv">${s.C||0}<span style="font-size:10px"> ${pct('C')}%</span></div></div>
+  </div>`;
+}
+
+// ══ QC LOG/SUM/REPORT ══
+function renderLog(){
+  const recs=filterRecs('today').slice().reverse();
+  document.getElementById('log-stats').innerHTML=statsHTML(calcStats(filterRecs('today')));
+  const list=document.getElementById('log-list');
+  if(!recs.length){list.innerHTML='<div class="empty">ยังไม่มีข้อมูล QC วันนี้</div>';return;}
+  list.innerHTML=recs.map(r=>`
+    <div class="log-item">
+      <div class="gbadge gb-${r.grade}">${r.grade}</div>
+      <div class="log-body">
+        <div class="log-main">${r.prod}${r.lot?' · '+r.lot:''}</div>
+        <div class="log-sub">${r.tailor} · ${r.time}${r.quickMode==='pass'?' · ไม่พบข้อบกพร่อง':r.quickMode==='bb2'?' · แก้ไขรอบที่ 2':''}${r.note?' — '+r.note:''}</div>
+        ${r.defectLabels&&r.defectLabels.length?`<div class="defect-tags">${r.defectLabels.map(l=>`<span class="dtag">${l}</span>`).join('')}</div>`:''}
+        ${r.photos&&r.photos.length?`<div class="log-photos">${r.photos.map(src=>`<img src="${src}" onclick="openLB('${src}')">`).join('')}</div>`:''}
+      </div>
+      <div class="log-right"><div class="log-qty">${r.qty}ชิ้น</div><button class="del-btn" onclick="delRec(${r.id})">✕</button></div>
+    </div>`).join('');
+}
+function delRec(id){records=records.filter(r=>r.id!==id);save();renderLog();}
+function setPeriod(p){qcPeriod=p;['today','week','month'].forEach(x=>document.getElementById('pb-'+x).classList.toggle('on',x===p));renderSum();}
+function setRPeriod(p){rPeriod=p;['today','week','month'].forEach(x=>document.getElementById('rb-'+x).classList.toggle('on',x===p));renderReport();}
+function renderSum(){
+  const recs=filterRecs(qcPeriod);const s=calcStats(recs);
+  const tm={};recs.forEach(r=>{if(!tm[r.tailor])tm[r.tailor]={A:0,B:0,BB:0,C:0,total:0};tm[r.tailor][r.grade]=(tm[r.tailor][r.grade]||0)+r.qty;tm[r.tailor].total+=r.qty;});
+  const rows=Object.entries(tm).sort((a,b)=>b[1].total-a[1].total);
+  document.getElementById('sum-content').innerHTML=`
+    ${statsHTML(s)}
+    <div class="card" style="margin-top:4px"><div class="card-title">สรุปตามช่าง</div>
+    ${rows.length?rows.map(([n,d])=>`<div class="tailor-row"><span style="font-weight:500">${n}</span>
+      <div style="display:flex;align-items:center;gap:5px">
+        <div style="display:flex;gap:3px"><span class="tg tg-A">A ${d.A||0}</span><span class="tg tg-B">B ${d.B||0}</span><span class="tg tg-BB">BB ${d.BB||0}</span><span class="tg tg-C">C ${d.C||0}</span></div>
+        <span style="font-size:12px;color:var(--txt2)">${d.total}ชิ้น</span>
+      </div></div>`).join(''):'<div style="font-size:13px;color:var(--txt2);padding:8px 0">ยังไม่มีข้อมูล</div>'}</div>`;
+}
+function renderReport(){
+  const recs=filterRecs(rPeriod);const s=calcStats(recs);
+  const pct=g=>s.total?Math.round((s[g]||0)/s.total*100):0;
+  const cMap={};recs.filter(r=>r.grade==='C').forEach(r=>{cMap[r.tailor]=(cMap[r.tailor]||0)+r.qty;});
+  document.getElementById('c-rank').innerHTML=Object.entries(cMap).sort((a,b)=>b[1]-a[1]).map(([n,q],i)=>`<div class="tailor-row"><span>${i+1}. ${n}</span><span style="color:var(--C);font-weight:600">${q} ชิ้น</span></div>`).join('')||'<div style="font-size:13px;color:var(--txt2);padding:8px 0">ไม่มีเกรด C 🎉</div>';
+  const dMap={};DEFECT_CATS.forEach(cat=>cat.items.forEach(item=>{dMap[item.id]={label:item.label,count:0};}));
+  recs.forEach(r=>{if(r.defects)Object.keys(r.defects).forEach(id=>{if(dMap[id])dMap[id].count+=r.qty;});});
+  const dRank=Object.values(dMap).filter(d=>d.count>0).sort((a,b)=>b.count-a.count).slice(0,5);
+  document.getElementById('defect-rank-qc').innerHTML=dRank.map((d,i)=>`<div class="tailor-row"><span>${i+1}. ${d.label}</span><span style="color:var(--C);font-weight:600">${d.count} ชิ้น</span></div>`).join('')||'<div style="font-size:13px;color:var(--txt2);padding:8px 0">ยังไม่มีข้อมูลจุดบกพร่อง</div>';
+  const tm={};recs.forEach(r=>{if(!tm[r.tailor])tm[r.tailor]={A:0,B:0,BB:0,C:0};tm[r.tailor][r.grade]=(tm[r.tailor][r.grade]||0)+r.qty;});
+  const lbl={'today':'วันที่ '+todayStr(),'week':'สัปดาห์นี้','month':'เดือนนี้'}[rPeriod];
+  const lines=['=== รายงาน QC — ฮันเฮง ===',lbl,'─────────────────────',
+    `รวม: ${s.total} ชิ้น  A:${s.A||0}(${pct('A')}%)  B:${s.B||0}(${pct('B')}%)  BB:${s.BB||0}(${pct('BB')}%)  C:${s.C||0}(${pct('C')}%)`,
+    '─────────────────────','ตามช่าง:'];
+  Object.entries(tm).forEach(([n,d])=>lines.push(`  ${n} → A:${d.A||0} B:${d.B||0} BB:${d.BB||0} C:${d.C||0}`));
+  if(dRank.length){lines.push('─────────────────────','บกพร่องบ่อย:');dRank.forEach((d,i)=>lines.push(`  ${i+1}. ${d.label} (${d.count})`))}
+  lines.push('─────────────────────');
+  recs.forEach(r=>{const ql=r.quickMode==='pass'?' | ไม่พบข้อบกพร่อง':r.quickMode==='bb2'?' | แก้ไขรอบที่ 2':'';const ds=r.defectLabels&&r.defectLabels.length?' | '+r.defectLabels.join(', '):ql;lines.push(`[${r.time}] ${r.grade}|${r.tailor}|${r.prod}|${r.qty}ชิ้น${ds}${r.note?' | '+r.note:''}${r.photos&&r.photos.length?' ['+r.photos.length+'รูป]':''}`);});
+  lines.push('─────────────────────','รายงานโดย: เพชร (QC)');
+  document.getElementById('exp-box').textContent=lines.join('\n');
+}
+function copyExp(){navigator.clipboard.writeText(document.getElementById('exp-box').textContent).then(()=>toast('คัดลอกแล้ว ✓')).catch(()=>toast('กรุณาคัดลอกด้วยตนเอง'));}
+
+// ══ MANAGER ══
+function tabMgr(t){
+  ['dash','tailor','defect','report'].forEach(id=>document.getElementById('mgr-'+id).style.display=id===t?'':'none');
+  document.querySelectorAll('#app-mgr .nav-btn').forEach((b,i)=>b.classList.toggle('on',['dash','tailor','defect','report'][i]===t));
+  if(t==='dash')renderMgrDash();else if(t==='tailor')renderMgrTailor();else if(t==='defect')renderMgrDefect();else renderMgrReport();
+}
+function setMgrPeriod(p){mgrPeriod=p;['today','week','month'].forEach(x=>document.getElementById('mp-'+x).classList.toggle('on',x===p));renderMgrDash();}
+function setMgrRPeriod(p){mgrRPeriod=p;['today','week','month'].forEach(x=>document.getElementById('mr-'+x).classList.toggle('on',x===p));renderMgrReport();}
+function renderMgrDash(){
+  const recs=filterRecs(mgrPeriod);const s=calcStats(recs);
+  const pct=g=>s.total?Math.round((s[g]||0)/s.total*100):0;
+  const lbl={'today':'วันนี้','week':'สัปดาห์นี้','month':'เดือนนี้'}[mgrPeriod];
+  document.getElementById('mgr-dash-content').innerHTML=`
+    <div style="font-size:11px;font-weight:600;color:var(--txt2);text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px">${lbl}</div>
+    <div class="dash-grid">
+      <div class="dash-card" style="grid-column:span 2">
+        <div class="dc-lbl">รวมตรวจทั้งหมด</div>
+        <div class="dc-val" style="color:var(--txt)">${s.total}</div>
+        <div class="dc-lbl">ชิ้น</div>
+      </div>
+      <div class="dash-card">
+        <div class="dc-lbl">เกรด A</div>
+        <div class="dc-val" style="color:var(--A)">${s.A||0}</div>
+        <div class="dc-pct" style="color:var(--A)">${pct('A')}%</div>
+        <div class="bar-wrap"><div class="bar-fill" style="width:${pct('A')}%;background:var(--A)"></div></div>
+      </div>
+      <div class="dash-card">
+        <div class="dc-lbl">เกรด B</div>
+        <div class="dc-val" style="color:var(--B)">${s.B||0}</div>
+        <div class="dc-pct" style="color:var(--B)">${pct('B')}%</div>
+        <div class="bar-wrap"><div class="bar-fill" style="width:${pct('B')}%;background:var(--B)"></div></div>
+      </div>
+      <div class="dash-card">
+        <div class="dc-lbl">เกรด BB</div>
+        <div class="dc-val" style="color:var(--BB)">${s.BB||0}</div>
+        <div class="dc-pct" style="color:var(--BB)">${pct('BB')}%</div>
+        <div class="bar-wrap"><div class="bar-fill" style="width:${pct('BB')}%;background:var(--BB)"></div></div>
+      </div>
+      <div class="dash-card">
+        <div class="dc-lbl">เกรด C ตีคืน</div>
+        <div class="dc-val" style="color:var(--C)">${s.C||0}</div>
+        <div class="dc-pct" style="color:var(--C)">${pct('C')}%</div>
+        <div class="bar-wrap"><div class="bar-fill" style="width:${pct('C')}%;background:var(--C)"></div></div>
+      </div>
+    </div>
+    ${renderTopDefects(recs,3)}`;
+}
+function renderTopDefects(recs,limit){
+  const dMap={};DEFECT_CATS.forEach(cat=>cat.items.forEach(item=>{dMap[item.id]={label:item.label,count:0};}));
+  recs.forEach(r=>{if(r.defects)Object.keys(r.defects).forEach(id=>{if(dMap[id])dMap[id].count+=r.qty;});});
+  const dRank=Object.values(dMap).filter(d=>d.count>0).sort((a,b)=>b.count-a.count).slice(0,limit);
+  if(!dRank.length)return'';
+  const max=dRank[0].count;
+  return`<div class="card" style="margin-top:4px"><div class="card-title">บกพร่องที่พบบ่อย</div>${dRank.map((d,i)=>`
+    <div class="drank-item">
+      <div class="drank-num">${i+1}</div>
+      <div class="drank-bar-wrap">
+        <div class="drank-label">${d.label}</div>
+        <div class="bar-wrap"><div class="drank-bar" style="width:${Math.round(d.count/max*100)}%"></div></div>
+      </div>
+      <div class="drank-cnt">${d.count}</div>
+    </div>`).join('')}</div>`;
+}
+function renderMgrTailor(){
+  const recs=filterRecs(mgrPeriod);
+  const tm={};recs.forEach(r=>{if(!tm[r.tailor])tm[r.tailor]={A:0,B:0,BB:0,C:0,total:0};tm[r.tailor][r.grade]=(tm[r.tailor][r.grade]||0)+r.qty;tm[r.tailor].total+=r.qty;});
+  const rows=Object.entries(tm).sort((a,b)=>b[1].C-a[1].C||(b[1].BB-a[1].BB));
+  document.getElementById('mgr-tailor-content').innerHTML=`
+    <div class="card"><div class="card-title">สรุปตามช่าง — เรียงจากเกรด C สูงสุด</div>
+    ${rows.length?rows.map(([n,d])=>{
+      const pct=g=>d.total?Math.round((d[g]||0)/d.total*100):0;
+      return`<div style="padding:10px 0;border-bottom:1px solid var(--bdr)">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+          <span style="font-size:14px;font-weight:600">${n}</span>
+          <span style="font-size:12px;color:var(--txt2)">${d.total} ชิ้น</span>
+        </div>
+        <div style="display:flex;gap:3px;margin-bottom:6px">
+          <span class="tg tg-A">A ${d.A||0}</span><span class="tg tg-B">B ${d.B||0}</span>
+          <span class="tg tg-BB">BB ${d.BB||0}</span><span class="tg tg-C">C ${d.C||0}</span>
+        </div>
+        <div style="display:flex;gap:2px;height:6px;border-radius:4px;overflow:hidden">
+          <div style="width:${pct('A')}%;background:var(--A)"></div>
+          <div style="width:${pct('B')}%;background:var(--B)"></div>
+          <div style="width:${pct('BB')}%;background:var(--BB)"></div>
+          <div style="width:${pct('C')}%;background:var(--C)"></div>
+        </div>
+      </div>`;}).join(''):'<div style="font-size:13px;color:var(--txt2);padding:8px 0">ยังไม่มีข้อมูล</div>'}</div>`;
+}
+function renderMgrDefect(){
+  const recs=filterRecs(mgrPeriod);
+  const dMap={};DEFECT_CATS.forEach(cat=>cat.items.forEach(item=>{dMap[item.id]={label:item.label,cat:cat.label,count:0};}));
+  recs.forEach(r=>{if(r.defects)Object.keys(r.defects).forEach(id=>{if(dMap[id])dMap[id].count+=r.qty;});});
+  const dRank=Object.values(dMap).filter(d=>d.count>0).sort((a,b)=>b.count-a.count);
+  const max=dRank[0]?.count||1;
+  document.getElementById('mgr-defect-content').innerHTML=`
+    <div class="card"><div class="card-title">จุดบกพร่องทั้งหมด — เรียงจากมากไปน้อย</div>
+    ${dRank.length?dRank.map((d,i)=>`
+      <div class="drank-item">
+        <div class="drank-num">${i+1}</div>
+        <div class="drank-bar-wrap">
+          <div class="drank-label">${d.label} <span style="font-size:11px;color:var(--txt2)">(${d.cat})</span></div>
+          <div class="bar-wrap"><div class="drank-bar" style="width:${Math.round(d.count/max*100)}%"></div></div>
+        </div>
+        <div class="drank-cnt">${d.count}</div>
+      </div>`).join(''):'<div style="font-size:13px;color:var(--txt2);padding:8px 0">ยังไม่มีข้อมูลจุดบกพร่อง</div>'}</div>`;
+}
+function renderMgrReport(){
+  const recs=filterRecs(mgrRPeriod);const s=calcStats(recs);
+  const pct=g=>s.total?Math.round((s[g]||0)/s.total*100):0;
+  const lbl={'today':'วันที่ '+todayStr(),'week':'สัปดาห์นี้','month':'เดือนนี้'}[mgrRPeriod];
+  const tm={};recs.forEach(r=>{if(!tm[r.tailor])tm[r.tailor]={A:0,B:0,BB:0,C:0};tm[r.tailor][r.grade]=(tm[r.tailor][r.grade]||0)+r.qty;});
+  const lines=['=== รายงานผู้บริหาร — ฮันเฮง ===',lbl,'─────────────────────',
+    `รวมตรวจ: ${s.total} ชิ้น`,`A: ${s.A||0}(${pct('A')}%)  B: ${s.B||0}(${pct('B')}%)  BB: ${s.BB||0}(${pct('BB')}%)  C: ${s.C||0}(${pct('C')}%)`,
+    '─────────────────────','ตามช่าง:'];
+  Object.entries(tm).sort((a,b)=>(b[1].C||0)-(a[1].C||0)).forEach(([n,d])=>lines.push(`  ${n}: A=${d.A||0} B=${d.B||0} BB=${d.BB||0} C=${d.C||0}`));
+  document.getElementById('mgr-exp-box').textContent=lines.join('\n');
+}
+function copyMgrExp(){navigator.clipboard.writeText(document.getElementById('mgr-exp-box').textContent).then(()=>toast('คัดลอกแล้ว ✓')).catch(()=>toast('กรุณาคัดลอกด้วยตนเอง'));}
+
+// ══ TAILOR VIEW ══
+function tabTailor(p){
+  tailorPeriod=p;
+  document.querySelectorAll('#app-tailor .nav-btn').forEach((b,i)=>b.classList.toggle('on',['today','week','history'][i]===p));
+  renderTailor(p);
+}
+function renderTailor(p){
+  const recs=filterRecs(p,curTailor);const s=calcStats(recs);
+  const latestGrade=recs.length?recs[recs.length-1].grade:'';
+  const gradeLabel={A:'ผ่าน / ดี',B:'แก้ไขได้',BB:'แก้ไขรอบที่ 2',C:'ตีคืน','':'ยังไม่มีข้อมูล'};
+  const heroClass=latestGrade?'mgh-'+latestGrade:'mgh-none';
+  const lbl={'today':'วันนี้','week':'สัปดาห์นี้','history':'ทั้งหมด'}[p];
+  let html=`
+    <div class="badge-info">👋 สวัสดี <b>${curTailor}</b> — ดูผลงานของคุณได้ที่นี่ค่ะ</div>
+    <div class="my-grade-hero ${heroClass}">
+      <div class="mgh-name">เกรดล่าสุด (${lbl})</div>
+      <div class="mgh-grade">${latestGrade||'—'}</div>
+      <div class="mgh-label">${gradeLabel[latestGrade]}</div>
+    </div>
+    ${statsHTML(s)}
+    <div class="card"><div class="card-title">รายการงาน${lbl==='วันนี้'?'วันนี้':lbl==='สัปดาห์นี้'?'สัปดาห์นี้':'ทั้งหมด'}</div>`;
+  if(!recs.length){html+='<div style="font-size:13px;color:var(--txt2);padding:8px 0">ยังไม่มีข้อมูล</div>';}
+  else{
+    html+=recs.slice().reverse().map(r=>`
+      <div class="tailor-row">
+        <div>
+          <div style="font-size:14px;font-weight:600">${r.prod}${r.lot?' · '+r.lot:''}</div>
+          <div style="font-size:12px;color:var(--txt2)">${r.date} ${r.time} · ${r.qty}ชิ้น${r.note?' — '+r.note:''}</div>
+          ${r.defectLabels&&r.defectLabels.length?`<div class="defect-tags" style="margin-top:4px">${r.defectLabels.map(l=>`<span class="dtag">${l}</span>`).join('')}</div>`:''}
+        </div>
+        <span class="tg tg-${r.grade}">${r.grade}</span>
+      </div>`).join('');
+  }
+  html+='</div>';
+  document.getElementById('tailor-view').innerHTML=html;
+}
+
+function openLB(src){document.getElementById('lb-img').src=src;document.getElementById('lb').style.display='flex';}
+function closeLB(){document.getElementById('lb').style.display='none';}
+function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2800);}
+</script>
+</body>
+</html>
