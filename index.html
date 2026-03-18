@@ -409,8 +409,8 @@ body{background:var(--bg);font-family:var(--fn);color:var(--txt);min-height:100v
 
 <script>
 // ══ CONFIG ══
-const PINS = { qc: '0123', mgr: '0125' }; // ← เปลี่ยน PIN ได้ที่นี่
-const TAILOR_NAMES = ['รส','วรรณ','แอนนา','วิกกี้','ริน','พลอย']; // ← เพิ่มชื่อช่างที่นี่
+const PINS = { qc: '0123, mgr: '0125' }; // ← เปลี่ยน PIN ได้ที่นี่
+const TAILOR_NAMES = ['ริน','พลอย','วิกกี้','แอนนา','วรรณ','รส']; // ← เพิ่มชื่อช่างที่นี่
 
 const DEFECT_CATS=[
   {id:'stitch',label:'การตัดเย็บ',ico:'🧵',items:[
@@ -435,30 +435,37 @@ const DEFECT_CATS=[
 const DW={s1:2,s2:2,s6:2,f2:2,z1:2,z2:2,s3:1,s4:1,s5:1,f1:1,f3:1,f4:1,f5:1,f6:1,z3:1,z4:1,l1:1,l2:1,l3:1,l4:1};
 const MG=['A','B','C'];
 
-const SHEET_URL = 'https://script.google.com/macros/s/AKfycbwMrt5iH4f9Id3QXJ1i2FzIpHCM4WZptSeAHZLeKCppREdFWPZpVu7mbuoJQUOWmaQnCg/exec';
+const SHEET_URL = 'https://script.google.com/macros/s/AKfycbzc1zkcjD9Cyp3kMHP5IUPV0gKD0RduKkMhzq-02TZISwfoEdPd0JnTsbpz91pVFumAxQ/exec';
 
 let records=[];
 try{records=JSON.parse(localStorage.getItem('hunheng_qc3')||'[]');}catch(e){}
 let curRole='',curTailor='',pinStr='',qcPeriod='today',rPeriod='today',mgrPeriod='today',mgrRPeriod='today',tailorPeriod='today';
 let grade='',qty=1,photos=[],checkedDefects={},quickMode='';
-let isSyncing=false;
 
 function save(){
-  try{localStorage.setItem('hunheng_qc3',JSON.stringify(records));}catch(e){}
+  try{ localStorage.setItem('hunheng_qc3', JSON.stringify(records)); }catch(e){}
+}
+
+// JSONP — ข้าม CORS ได้ 100%
+function jsonpGet(url){
+  return new Promise((resolve, reject)=>{
+    const cb = 'jcb_'+Date.now()+'_'+Math.floor(Math.random()*9999);
+    const s = document.createElement('script');
+    const t = setTimeout(()=>{ cleanup(); reject(new Error('timeout')); }, 10000);
+    window[cb] = (data)=>{ cleanup(); resolve(data); };
+    s.onerror = ()=>{ cleanup(); reject(new Error('error')); };
+    function cleanup(){ clearTimeout(t); delete window[cb]; if(s.parentNode) s.parentNode.removeChild(s); }
+    s.src = url + (url.includes('?')?'&':'?') + 'callback='+cb+'&t='+Date.now();
+    document.body.appendChild(s);
+  });
 }
 
 async function loadFromSheet(){
   try{
-    showSyncStatus('กำลังโหลดข้อมูล...');
-    const res = await fetch(SHEET_URL+'?t='+Date.now(), {
-      method:'GET',
-      redirect:'follow'
-    });
-    const text = await res.text();
-    let data;
-    try{ data = JSON.parse(text); }catch(e){ hideSyncStatus(); return; }
+    showSyncStatus('🔄 กำลังโหลดข้อมูล...');
+    const data = await jsonpGet(SHEET_URL);
     if(Array.isArray(data) && data.length > 0){
-      const sheetRecs = data.map(r=>{
+      records = data.map(r=>{
         if(!r.id) r.id = (r.date||'')+'_'+(r.time||'')+'_'+(r.tailor||'');
         if(!r.defectLabels) r.defectLabels=[];
         if(!r.photos) r.photos=[];
@@ -466,49 +473,40 @@ async function loadFromSheet(){
         r.qty = parseInt(r.qty)||1;
         return r;
       });
-      records = sheetRecs;
       save();
     }
     hideSyncStatus();
+    return true;
   }catch(e){
     hideSyncStatus();
-    console.log('load error',e);
+    return false;
   }
 }
 
 async function sendToSheet(rec){
   try{
     const payload = {
-      date: rec.date, time: rec.time,
-      tailor: rec.tailor, prod: rec.prod,
-      lot: rec.lot||'', qty: rec.qty,
-      grade: rec.grade,
-      defectLabels: rec.defectLabels||[],
-      note: rec.note||''
+      date:rec.date, time:rec.time, tailor:rec.tailor, prod:rec.prod,
+      lot:rec.lot||'', qty:rec.qty, grade:rec.grade,
+      defectLabels:rec.defectLabels||[], note:rec.note||''
     };
-    // ส่งผ่าน no-cors (หลีกเลี่ยง CORS error จาก GitHub Pages)
-    const form = new FormData();
-    form.append('data', JSON.stringify(payload));
-    await fetch(SHEET_URL, {
-      method:'POST',
-      mode:'no-cors',
-      body: JSON.stringify(payload)
-    });
+    await fetch(SHEET_URL, { method:'POST', mode:'no-cors', body:JSON.stringify(payload) });
     return true;
-  }catch(e){
-    console.log('send error',e);
-    return false;
-  }
+  }catch(e){ return false; }
 }
 
 function showSyncStatus(msg){
   let el=document.getElementById('sync-bar');
-  if(!el){el=document.createElement('div');el.id='sync-bar';el.style.cssText='position:fixed;top:0;left:0;right:0;background:#185FA5;color:#fff;text-align:center;font-size:12px;padding:6px;z-index:999;font-family:var(--fn)';document.body.appendChild(el);}
-  el.textContent=msg;el.style.display='block';
+  if(!el){
+    el=document.createElement('div'); el.id='sync-bar';
+    el.style.cssText='position:fixed;top:0;left:0;right:0;background:#185FA5;color:#fff;text-align:center;font-size:12px;padding:6px;z-index:9999;font-family:var(--fn)';
+    document.body.appendChild(el);
+  }
+  el.textContent=msg; el.style.display='block';
 }
 function hideSyncStatus(){
   const el=document.getElementById('sync-bar');
-  if(el)el.style.display='none';
+  if(el) el.style.display='none';
 }
 
 // ══ LOGIN ══
@@ -562,13 +560,17 @@ function enterApp(role){
   if(role==='qc'){
     document.getElementById('app-qc').style.display='block';
     buildDF();
-    loadFromSheet().then(()=>{records.forEach(r=>updateSugg(r.tailor));});
+    records.forEach(r=>updateSugg(r.tailor));
+    // ลอง sync จาก Sheet (ถ้าทำได้) แต่ไม่บังคับ
+    loadFromSheet().then(()=>{ records.forEach(r=>updateSugg(r.tailor)); }).catch(()=>{});
   } else if(role==='mgr'){
     document.getElementById('app-mgr').style.display='block';
-    loadFromSheet().then(()=>renderMgrDash());
+    renderMgrDash();
+    loadFromSheet().then(()=>renderMgrDash()).catch(()=>{});
   } else {
     document.getElementById('app-tailor').style.display='block';
-    loadFromSheet().then(()=>renderTailor('today'));
+    renderTailor('today');
+    loadFromSheet().then(()=>renderTailor('today')).catch(()=>{});
   }
 }
 function logout(){
@@ -676,8 +678,16 @@ function submitQC(){
     tailor:document.getElementById('f-tailor').value.trim(),
     prod:document.getElementById('f-prod').value.trim(),lot:document.getElementById('f-lot').value.trim(),
     grade,qty,defects:ds,defectLabels:dl,quickMode,note:document.getElementById('f-note').value.trim(),photos:[...photos]};
-  records.push(rec);save();updateSugg(rec.tailor);
-  sendToSheet(rec).then(()=>showSyncStatus('บันทึกลง Google Sheet แล้ว ✓')).then(()=>setTimeout(hideSyncStatus,2000));
+  records.push(rec);
+  save(); // เซฟ localStorage ก่อนเลย
+  updateSugg(rec.tailor);
+  // ส่งไป Sheet (background - ไม่กระทบการแสดงผล)
+  sendToSheet(rec).then(()=>{
+    showSyncStatus('✓ บันทึกแล้ว — ส่ง Google Sheet สำเร็จ');
+    setTimeout(hideSyncStatus, 2000);
+  }).catch(()=>{
+    // ถ้า Sheet ไม่ได้ก็ไม่เป็นไร ข้อมูลอยู่ใน localStorage แล้ว
+  });
   ['f-prod','f-lot','f-note'].forEach(id=>document.getElementById(id).value='');
   photos=[];renderPG();qty=1;sync();quickMode='';grade='';showMG(true);MG.forEach(g=>document.getElementById('gb-'+g).className='gbtn');
   clearAll();chk();toast('บันทึกแล้ว ✓  เกรด '+rec.grade+' — '+rec.tailor+' ('+rec.qty+'ชิ้น)');buildDF();
